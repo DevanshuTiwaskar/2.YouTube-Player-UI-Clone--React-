@@ -1,29 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import VideoCard from "./VIdeoCard";
+import { useLocation, useNavigate, useParams } from "react-router";
 
-//   const [videos, setVideos] = useState([]);
+const PlayerPage = () => {
+  const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-//   useEffect(() => {
-//     fetch("https://api.sampleapis.com/futurama/episodes") // Example free API
-//       .then((res) => res.json())
-//       .then((data) => {
-//         const mappedData = data.slice(0, 12).map((item) => ({
-//           title: item.title,
-//           thumbnail: item?.writers?.length
-//             ? `https://picsum.photos/300/200?random=${Math.random()}`
-//             : "https://via.placeholder.com/300x200",
-//           channel: "Sample Channel",
-//           views: Math.floor(Math.random() * 1000) + "K",
-//           uploaded: "1 day ago",
-//         }));
-//         setVideos(mappedData);
-//       });
-//   }, []);
+  const video = location.state?.video;
 
-
-
-const VideoGrid = () => {
-  const initialVideos = [
+  // Dummy suggested videos (replace with API later)
+  const suggestedVideos = [
  {
     thumbnail: "https://i.ytimg.com/vi/PkZNo7MFNFg/hqdefault.jpg",
     duration: "3:26:52",
@@ -624,55 +611,141 @@ const VideoGrid = () => {
     uploaded: "10 years ago",
     videoUrl: "https://www.youtube.com/embed/9bZkp7q19f0"
   }
-];
+  ];
 
-  const [videos, setVideos] = useState(initialVideos);
-  const loaderRef = useRef(null);
+  if (!video) {
+    return <div className="text-white">Video not found.</div>;
+  }
 
-  // Intersection Observer
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMoreVideos();
-        }
-      },
-      { threshold: 1 }
-    );
-
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
-
-    return () => {
-      if (loaderRef.current) {
-        observer.unobserve(loaderRef.current);
-      }
-    };
-  }, [videos]); // ✅ re-run when videos change so observer always watches the last element
-
-  const loadMoreVideos = () => {
-    // Simulate fetching more data
-    const moreVideos = initialVideos.map((v, i) => ({
-      ...v,
-      id: videos.length + i + 1,
-    }));
-
-    setVideos((prev) => [...prev, ...moreVideos]);
-  };
   return (
- <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4 bg-[#0f0f0f]">
-        {videos.map((video, index) => (
-          <VideoCard key={index} video={video} />
-        ))}
+<div className="flex flex-col lg:flex-row gap-6">
+  {/* Left: Video Player + Info */}
+  <div className="flex-1">
+    {/* Back Button */}
+    <button
+      onClick={() => navigate("/")}
+      className="flex items-center gap-2 text-white mb-3 hover:text-gray-400"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={2}
+        stroke="currentColor"
+        className="w-5 h-5"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M15 19l-7-7 7-7"
+        />
+      </svg>
+      Back
+    </button>
+
+    {/* Video iframe */}
+    <div className="aspect-video bg-black rounded-lg overflow-hidden">
+      <iframe
+        className="w-full h-full"
+        src={video.videoUrl}
+        title={video.title}
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    </div>
+
+    {/* Title */}
+    <h1 className="text-xl font-bold mt-3">{video.title}</h1>
+    <p className="text-gray-400 text-sm">
+      {video.views} • {video.uploaded}
+    </p>
+
+    {/* Channel Info + Buttons */}
+    <div className="flex flex-wrap sm:flex-nowrap justify-between items-center mt-4 pb-4 border-b border-gray-700 gap-3">
+      <div className="flex items-center gap-3">
+        <img
+          src={video.channelAvatar}
+          alt={video.channelName}
+          className="w-10 h-10 rounded-full"
+        />
+        <div>
+          <p className="font-semibold">{video.channelName}</p>
+          <p className="text-gray-400 text-sm">21K subscribers</p>
+        </div>
+        <button className="ml-0 sm:ml-4 bg-white text-black px-4 py-1 rounded-full font-semibold">
+          Subscribe
+        </button>
       </div>
 
-      {/* 👇 This is the invisible "trigger" for loading more */}
-      <div ref={loaderRef} className="h-10 bg-transparent">loading........</div>
-    </>
+      <div className="flex items-center gap-3">
+        <button className="bg-gray-800 px-4 py-1 rounded-full">👍 37K</button>
+        <button className="bg-gray-800 px-4 py-1 rounded-full">👎</button>
+        <button className="bg-gray-800 px-4 py-1 rounded-full">Share</button>
+      </div>
+    </div>
+
+    {/* Description */}
+    <div className="mt-4 bg-gray-800 p-3 rounded-lg">
+      <p>{video.description || "No description provided."}</p>
+    </div>
+
+    {/* Comments */}
+    <div className="mt-6">
+      <h2 className="text-lg font-semibold mb-4">Comments</h2>
+      <div className="flex gap-3 mb-4">
+        <img
+          src="https://via.placeholder.com/40"
+          alt="User"
+          className="w-10 h-10 rounded-full"
+        />
+        <input
+          type="text"
+          placeholder="Add a comment..."
+          className="bg-transparent border-b border-gray-600 flex-1 outline-none"
+        />
+      </div>
+
+      {/* Dummy comments */}
+      <div className="flex gap-3 mb-4">
+        <img
+          src="https://via.placeholder.com/40"
+          alt="User"
+          className="w-10 h-10 rounded-full"
+        />
+        <div>
+          <p className="font-semibold">John Doe</p>
+          <p className="text-gray-400 text-sm">
+            Amazing performance! Truly legendary.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex gap-3">
+        <img
+          src="https://via.placeholder.com/40"
+          alt="User"
+          className="w-10 h-10 rounded-full"
+        />
+        <div>
+          <p className="font-semibold">Music Lover</p>
+          <p className="text-gray-400 text-sm">
+            I grew up listening to this, timeless classic.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Right: Suggested Videos */}
+  <div className="w-full lg:w-80 flex flex-col gap-4">
+    {suggestedVideos.map((v) => (
+      <VideoCard key={v.id} video={v} />
+    ))}
+  </div>
+</div>
 
   );
 };
 
-export default VideoGrid;
+export default PlayerPage;
