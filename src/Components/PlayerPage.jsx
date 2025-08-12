@@ -619,9 +619,7 @@ const PlayerPage = () => {
 
   return (
 <div className="flex flex-col lg:flex-row gap-6">
-  {/* Left: Video Player + Info */}
   <div className="flex-1">
-    {/* Back Button */}
     <button
       onClick={() => navigate("/")}
       className="flex items-center gap-2 text-white mb-3 hover:text-gray-400"
